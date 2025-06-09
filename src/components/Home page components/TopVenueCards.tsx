@@ -5,7 +5,7 @@ const venues = [
   {
     id: 1,
     name: "The Royal Palace",
-    image: "/img1.jpeg",
+    image: "Images/img1.jpeg",
     description:
       "Elegant and luxurious venue ideal for weddings and grand events.",
     address: "123 Main Street, Mumbai",
@@ -15,7 +15,7 @@ const venues = [
   {
     id: 2,
     name: "Lakeside Garden",
-    image: "/img2.jpeg",
+    image: "Images/img2.jpeg",
     description: "Serene lakeside location with beautiful outdoor decor.",
     address: "Lakeview Road, Pune",
     price: "₹1,80,000/day",
@@ -24,7 +24,7 @@ const venues = [
   {
     id: 3,
     name: "Heritage Haveli",
-    image: "/img3.jpeg",
+    image: "Images/img3.jpeg",
     description:
       "A majestic haveli with intricate architecture perfect for cultural celebrations.",
     address: "Old City, Jaipur",
@@ -34,7 +34,7 @@ const venues = [
   {
     id: 4,
     name: "Skyline Banquet",
-    image: "/img4.jpg",
+    image: "Images/img4.jpg",
     description:
       "Modern banquet hall with rooftop views and premium amenities.",
     address: "MG Road, Bangalore",
@@ -44,7 +44,7 @@ const venues = [
   {
     id: 5,
     name: "Palm Retreat",
-    image: "/img5.jpg",
+    image: "Images/img5.jpg",
     description:
       "Tropical outdoor venue surrounded by palm trees and lush lawns.",
     address: "Beachside Avenue, Goa",
@@ -54,7 +54,7 @@ const venues = [
   {
     id: 6,
     name: "The Glass House",
-    image: "/img1.jpeg",
+    image: "Images/img1.jpeg",
     description: "Stylish glass-walled venue ideal for modern, chic events.",
     address: "Cyberhub, Gurgaon",
     price: "₹2,40,000/day",
@@ -63,7 +63,7 @@ const venues = [
   {
     id: 7,
     name: "Amber Convention Center",
-    image: "/img2.jpeg",
+    image: "Images/img2.jpeg",
     description:
       "Large-scale venue with flexible spaces for corporate and wedding functions.",
     address: "Science City Road, Ahmedabad",
@@ -73,7 +73,7 @@ const venues = [
   {
     id: 8,
     name: "Moonlight Meadows",
-    image: "/img3.jpeg",
+    image: "Images/img3.jpeg",
     description:
       "Enchanting open-air venue with fairy lights and garden ambiance.",
     address: "Ring Road, Indore",

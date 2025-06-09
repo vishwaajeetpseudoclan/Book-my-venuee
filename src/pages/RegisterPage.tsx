@@ -1,14 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaBicycle, FaCar, FaPlane } from "react-icons/fa";
+import { register } from "../api/auth";
 
 const steps = ["Select Role", "Enter Details", "Review", "Subscription"];
 
-const Register = () => {
+const RegisterPage = () => {
+  const navigate = useNavigate();
   const [role, setRole] = useState("");
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    password: "",
     contact: "",
     company: "",
     category: "",
@@ -16,7 +20,9 @@ const Register = () => {
     subscription: "",
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -29,10 +35,31 @@ const Register = () => {
     if (step > 1) setStep((prev) => prev - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("Registration Successful!");
-    console.log({ role, ...formData });
+    try {
+      if (!role) {
+        alert("Please select a role before registering.");
+        return;
+      }
+
+      const data = await register(
+        formData.fullName,
+        formData.email,
+        formData.password
+      );
+
+      // ✅ Save local role
+      localStorage.setItem("token", data.jwt);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("ROLE", JSON.stringify(role)); 
+      localStorage.setItem("AUTH_TOKEN", data.jwt);
+
+      navigate("/dashboard/dashboardpage");
+    } catch (error) {
+      alert("Registration failed. Please try again.");
+      console.error(error);
+    }
   };
 
   const plans = [
@@ -100,7 +127,6 @@ const Register = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8">
-        {/* Step 1: Role Selection */}
         {step === 1 && (
           <div className="flex justify-center gap-6 flex-wrap">
             {["user", "vendor", "freelancer"].map((r) => (
@@ -123,7 +149,6 @@ const Register = () => {
           </div>
         )}
 
-        {/* Step 2: Details */}
         {step === 2 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input
@@ -140,6 +165,15 @@ const Register = () => {
               name="email"
               placeholder="Email"
               value={formData.email}
+              onChange={handleInputChange}
+              required
+              className="p-3 rounded-xl shadow w-full"
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
               onChange={handleInputChange}
               required
               className="p-3 rounded-xl shadow w-full"
@@ -210,7 +244,6 @@ const Register = () => {
           </div>
         )}
 
-        {/* Step 3: Review */}
         {step === 3 && (
           <div className="text-lg text-gray-700 space-y-3 px-4">
             <p>
@@ -225,7 +258,6 @@ const Register = () => {
             <p>
               <strong>Contact:</strong> {formData.contact}
             </p>
-
             {(role === "vendor" || role === "freelancer") && (
               <>
                 <p>
@@ -239,7 +271,6 @@ const Register = () => {
                 </p>
               </>
             )}
-
             <div className="flex justify-between mt-6">
               <button
                 type="button"
@@ -259,7 +290,6 @@ const Register = () => {
           </div>
         )}
 
-        {/* Step 4: Subscription Plan Cards */}
         {step === 4 && (
           <div className="space-y-8">
             <h2 className="text-2xl font-bold text-center text-purple-700">
@@ -325,4 +355,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RegisterPage;

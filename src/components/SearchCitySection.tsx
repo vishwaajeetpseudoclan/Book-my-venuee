@@ -7,9 +7,9 @@ const allCities = [
 ];
 
 const topVenueImages = [
-  "/img1.jpeg",
-  "/img2.jpeg",
-  "/img3.jpeg",
+  "Images/img1.jpeg",
+  "Images/img2.jpeg",
+  "Images/img3.jpeg",
 ];
 
 const ExploreCities = () => {
