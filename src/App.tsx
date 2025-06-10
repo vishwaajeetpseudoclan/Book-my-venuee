@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
+import VenuesPage from "./pages/VenuesPage";
 
 import MainLayout from "./components/Layout/MainLayout";
 import DashboardLayout from "./components/Layout/DashboardLayout";
@@ -40,6 +41,7 @@ function App() {
           <Route path="/venues/banquet-halls" element={<BanquetHallsPage />} />
           <Route path="/venues/gardens" element={<MarriageGardenPage />} />
           <Route path="/venues/resorts" element={<WeddingResorts />} />
+          <Route path="/venues" element={<VenuesPage />} />
         </Route>
 
         {/* Dashboard Layout */}

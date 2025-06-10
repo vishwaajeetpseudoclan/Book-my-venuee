@@ -185,7 +185,7 @@ const MarriageGardenPage = () => {
               <span className="mx-2 text-gray-400">{">"}</span>
             </li>
             <li>
-              <Link to="/vendors" className="hover:text-pink-600">
+              <Link to="/Venues" className="hover:text-pink-600">
                 Venues
               </Link>
             </li>
