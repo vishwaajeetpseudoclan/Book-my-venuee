@@ -1,61 +1,67 @@
-import React from "react";
-import { Link } from "react-router-dom";
+'use client';
 
-const venueCategories = [
-  {
-    name: "Banquet Halls",
-    path: "/venues/banquet-halls",
-    img: "/images/img1.jpg",
-  },
-  {
-    name: "Marriage Garden / Lawns",
-    path: "/venues/marriage-garden",
-    img: "/images/img2.jpg",
-  },
-  {
-    name: "Wedding Resorts",
-    path: "/venues/wedding-resorts",
-    img: "/images/img3.jpg",
-  },
-  {
-    name: "Small Function / Party Halls",
-    path: "/venues/party-halls",
-    img: "/images/img4.jpg",
-  },
-];
+import { useState, useMemo } from "react";
+import useVenueData from "../hooks/useVenueData";
+import VenueCard from "../components/VenueCards";
+import SearchBar from "../components/SearchBar"; // Adjust path if needed
 
-export default function VenuesPage() {
+export default function AllVenuesPage() {
+  const venues = useVenueData();
+  const [filter, setFilter] = useState("");
+
+  // Extract only unique city names
+  const allCities = useMemo(() => {
+    const cities = venues.map(v => v.location?.trim());
+    return Array.from(new Set(cities)).filter(Boolean).sort();
+  }, [venues]);
+
+  // Filter only when filter is applied
+  const filteredVenues = filter
+    ? venues.filter((venue) =>
+        venue.location.toLowerCase().includes(filter.toLowerCase())
+      )
+    : venues;
+
+  // Group filtered venues by type
+  const groupedByType: Record<string, typeof venues> = {};
+  filteredVenues.forEach((venue) => {
+    const types = Array.isArray(venue.type) ? venue.type : venue.type.split(",");
+    types.forEach((typeRaw) => {
+      const type = typeRaw.trim();
+      if (!groupedByType[type]) groupedByType[type] = [];
+      groupedByType[type].push(venue);
+    });
+  });
+
+  const sortedTypes = Object.keys(groupedByType).sort();
+
   return (
-    <div className="bg-gray-50 min-h-screen py-10 px-4 sm:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-pink-600 mb-10">
-          Explore Wedding Venues by Type
-        </h1>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">All Venues</h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          {venueCategories.map((venue) => (
-            <Link
-              key={venue.name}
-              to={venue.path}
-              className="group block rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition duration-300 bg-white"
-            >
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={venue.img}
-                  alt={venue.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition duration-300"></div>
-              </div>
-              <div className="p-4 text-center">
-                <h2 className="text-xl font-semibold text-gray-800 group-hover:text-pink-600 transition">
-                  {venue.name}
-                </h2>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+      {/* Integrated and fixed SearchBar */}
+      <SearchBar
+        cities={allCities}
+        placeholder="Search by city"
+        onSearch={(city) => setFilter(city)}
+      />
+
+      {sortedTypes.length === 0 ? (
+        <p className="text-center text-gray-500 mt-10">No venues match your filter.</p>
+      ) : (
+        sortedTypes.map((type) => (
+          <div key={type} className="mb-12 mt-10">
+            <h2 className="text-2xl font-semibold text-pink-600 border-l-4 border-pink-400 pl-4 mb-6">
+              {type}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {groupedByType[type].map((venue) => (
+                <VenueCard key={venue.id} venue={venue} />
+              ))}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }

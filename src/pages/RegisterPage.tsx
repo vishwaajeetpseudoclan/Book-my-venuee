@@ -1,358 +1,203 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBicycle, FaCar, FaPlane } from "react-icons/fa";
-import { register } from "../api/auth";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { fetchRoles } from "../api/roles";
+import useRegister from "../hooks/useRegister";
 
-const steps = ["Select Role", "Enter Details", "Review", "Subscription"];
+const registerSchema = z.object({
+  fullName: z.string().min(1, "Full Name is required"),
+  email: z.string().email("Invalid email address"),
+  contact: z.string().regex(/^[6-9]\d{9}$/, "Invalid phone number"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  company: z.string().optional(),
+  category: z.string().optional(),
+  service: z.string().optional(),
+  subscription: z.string().min(1, "Subscription is required"),
+});
 
-const RegisterPage = () => {
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [role, setRole] = useState("");
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    contact: "",
-    company: "",
-    category: "",
-    service: "",
-    subscription: "",
+  const [role, setRole] = useState<string>("");
+  const [roleId, setRoleId] = useState<number | null>(null);
+  const [availableRoles, setAvailableRoles] = useState<{ id: string; name: string }[]>([]);
+  const [step, setStep] = useState<number>(1);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    getValues,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      contact: "",
+      password: "",
+      company: "",
+      category: "",
+      service: "",
+      subscription: "",
+    },
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const { mutate: registerMutate, isPending } = useRegister();
 
-  const nextStep = () => {
-    if (step < 4) setStep((prev) => prev + 1);
-  };
+  useEffect(() => {
+    fetchRoles().then((roles) => setAvailableRoles(roles));
+  }, []);
 
-  const prevStep = () => {
-    if (step > 1) setStep((prev) => prev - 1);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      if (!role) {
-        alert("Please select a role before registering.");
-        return;
-      }
-
-      const data = await register(
-        formData.fullName,
-        formData.email,
-        formData.password
-      );
-
-      // ✅ Save local role
-      localStorage.setItem("token", data.jwt);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("ROLE", JSON.stringify(role)); 
-      localStorage.setItem("AUTH_TOKEN", data.jwt);
-
-      navigate("/dashboard/dashboardpage");
-    } catch (error) {
-      alert("Registration failed. Please try again.");
-      console.error(error);
+  useEffect(() => {
+    if (role) {
+      localStorage.setItem("userRole", role);
+      const matchedRole = availableRoles.find((r) => r.name.toLowerCase() === role.toLowerCase());
+      if (matchedRole) setRoleId(Number(matchedRole.id));
     }
+  }, [role, availableRoles]);
+
+  const onSubmit = (data: RegisterFormData) => {
+    if (!roleId) return;
+    registerMutate({
+      username: data.fullName,
+      email: data.email,
+      password: data.password,
+      role: roleId as any,
+    }, {
+      onSuccess: () => navigate(`/dashboard/${role.toLowerCase()}-dashboard`)
+    });
   };
 
-  const plans = [
-    {
-      name: "Start-Up",
-      price: "Free",
-      icon: <FaBicycle size={40} className="text-purple-500 mx-auto mb-2" />,
-      features: ["Unlimited Downloads", "Email Support", "Lifetime Access"],
-      value: "start-up",
-    },
-    {
-      name: "Pro",
-      price: "49$",
-      icon: <FaCar size={40} className="text-pink-500 mx-auto mb-2" />,
-      features: [
-        "Everything in Free, plus",
-        "Custom Call Support",
-        "1 Year Access",
-      ],
-      value: "pro",
-    },
-    {
-      name: "Enterprise",
-      price: "99$",
-      icon: <FaPlane size={40} className="text-blue-500 mx-auto mb-2" />,
-      features: [
-        "Everything in Pro, plus",
-        "Priority Support",
-        "Lifetime Access",
-      ],
-      value: "enterprise",
-    },
-  ];
+  const renderStepper = (labels: string[]) => (
+    <div className="flex justify-center items-center gap-4 text-sm font-medium text-gray-700 mb-6">
+      {labels.map((label, i) => (
+        <div key={i} className="flex items-center">
+          <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${step === i + 2 ? 'bg-pink-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{i + 1}</div>
+          <span className="ml-1 mr-3 text-sm">{label}</span>
+          {i < labels.length - 1 && <div className="w-4 h-0.5 bg-gray-300" />}
+        </div>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-100 to-pink-100 py-10 px-4">
-      <h1 className="text-4xl font-bold text-center text-purple-700 mb-10">
-        Multi-Step Registration
-      </h1>
-
-      {/* Stepper */}
-      <div className="flex justify-center mb-10">
-        {steps.map((s, index) => (
-          <div
-            key={index}
-            className={`flex items-center text-sm md:text-base ${
-              index < step - 1 ? "text-green-600" : "text-gray-400"
-            }`}
-          >
-            <div
-              className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 ${
-                index + 1 === step
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-gray-400"
-              }`}
-            >
-              {index + 1}
-            </div>
-            <span className="mx-2">{s}</span>
-            {index < steps.length - 1 && (
-              <div className="w-8 md:w-16 h-1 bg-gray-300"></div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#f7eefd] py-10 px-4">
+      <div className="w-full max-w-2xl bg-white shadow-xl rounded-3xl p-6 sm:p-10 relative">
         {step === 1 && (
-          <div className="flex justify-center gap-6 flex-wrap">
-            {["user", "vendor", "freelancer"].map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => {
-                  setRole(r);
-                  nextStep();
-                }}
-                className={`px-6 py-3 rounded-xl text-lg font-semibold transition-all duration-300 ${
-                  role === r
-                    ? "bg-purple-700 text-white"
-                    : "bg-white hover:bg-purple-200 text-purple-700 shadow-md"
-                }`}
-              >
-                {r.charAt(0).toUpperCase() + r.slice(1)}
-              </button>
-            ))}
-          </div>
+          <>
+            <button
+              className="absolute top-4 right-5 text-xl font-bold text-gray-400 hover:text-gray-600"
+              onClick={() => navigate("/")}
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">Sign up</h2>
+            <p className="text-center text-sm text-gray-500 mb-6">
+              Which option describes you best?
+            </p>
+            <div className="space-y-4">
+              {[
+                { key: "user", title: "Individual", description: "If you are planning an event" },
+                { key: "vendor", title: "Vendor", description: "If you are a service provider like a venue, caterer, etc" },
+                { key: "freelancer", title: "Freelancer", description: "If you are an individual service provider like a photographer, DJ, driver, etc" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => {
+                    setRole(item.key);
+                    setTimeout(() => setStep(2), 0);
+                  }}
+                  className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 ${
+                    role === item.key
+                      ? "bg-[#5a3eff] text-white border-[#5a3eff] shadow-lg"
+                      : "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="text-base font-semibold">{item.title}</div>
+                  <div className="text-sm mt-1 opacity-80">{item.description}</div>
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
-        {step === 2 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              required
-              className="p-3 rounded-xl shadow w-full"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className="p-3 rounded-xl shadow w-full"
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className="p-3 rounded-xl shadow w-full"
-            />
-            <input
-              type="tel"
-              name="contact"
-              placeholder="Contact Number"
-              value={formData.contact}
-              onChange={handleInputChange}
-              required
-              className="p-3 rounded-xl shadow w-full"
-            />
+        {step === 2 && role === "user" && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <h2 className="text-2xl font-bold text-center">Individual</h2>
+            <p className="text-center text-gray-600">Sign up to plan your event</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" {...register("email")} className="input-style" />
+              {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" {...register("password")} className="input-style" />
+              <p className="text-xs text-gray-500">Must be at least 8 characters</p>
+              {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+            </div>
+            <button type="submit" className="w-full bg-[#5a3eff] hover:bg-[#4c35e6] text-white py-3 rounded-xl font-medium text-lg" disabled={isPending}>
+              {isPending ? "Signing up..." : "Sign up"}
+            </button>
+          </form>
+        )}
 
-            {(role === "vendor" || role === "freelancer") && (
-              <>
-                <input
-                  type="text"
-                  name="company"
-                  placeholder="Company Name"
-                  value={formData.company}
-                  onChange={handleInputChange}
-                  className="p-3 rounded-xl shadow w-full"
-                />
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="p-3 rounded-xl shadow w-full"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  <option value="catering">Catering</option>
-                  <option value="photography">Photography</option>
-                  <option value="decoration">Decoration</option>
-                </select>
-                <select
-                  name="service"
-                  value={formData.service}
-                  onChange={handleInputChange}
-                  className="p-3 rounded-xl shadow w-full"
-                  required
-                >
-                  <option value="">Select Service</option>
-                  <option value="food-service">Food Service</option>
-                  <option value="venue-decoration">Venue Decoration</option>
-                  <option value="photo-shoot">Photo Shoot</option>
-                </select>
-              </>
+        {step === 2 && (role === "vendor" || role === "freelancer") && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <h2 className="text-2xl font-bold text-center capitalize">{role}</h2>
+            {renderStepper(role === "vendor"
+              ? ["Personal Details", "Venue Details", "Services", "Subscription"]
+              : ["Personal Details", "Services", "Subscription"]
             )}
 
-            <div className="md:col-span-2 flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                className="text-purple-700 underline"
-              >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input {...register("fullName")} placeholder="Full Name" className="input-style" />
+              <input {...register("email")} placeholder="Email" className="input-style" />
+              <input {...register("contact")} placeholder="Contact Number" className="input-style" />
+              <input {...register("password")} placeholder="Password" type="password" className="input-style" />
+              <input {...register("company")} placeholder="Company Name (optional)" className="input-style" />
+              <select {...register("category")} className="input-style">
+                <option value="">Select Category</option>
+                <option value="catering">Catering</option>
+                <option value="photography">Photography</option>
+                <option value="decoration">Decoration</option>
+              </select>
+              <select {...register("service")} className="input-style">
+                <option value="">Select Service</option>
+                <option value="food-service">Food Service</option>
+                <option value="venue-decoration">Venue Decoration</option>
+                <option value="photo-shoot">Photo Shoot</option>
+              </select>
+            </div>
+
+            <div className="flex justify-between items-center pt-4">
+              <button type="button" onClick={() => setStep(1)} className="text-pink-600 text-sm underline">
                 Back
               </button>
-              <button
-                type="button"
-                onClick={nextStep}
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg shadow-md"
-              >
+              <button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white py-2 px-6 rounded-lg">
                 Continue
               </button>
             </div>
-          </div>
+          </form>
         )}
+      </div>
 
-        {step === 3 && (
-          <div className="text-lg text-gray-700 space-y-3 px-4">
-            <p>
-              <strong>Role:</strong> {role}
-            </p>
-            <p>
-              <strong>Full Name:</strong> {formData.fullName}
-            </p>
-            <p>
-              <strong>Email:</strong> {formData.email}
-            </p>
-            <p>
-              <strong>Contact:</strong> {formData.contact}
-            </p>
-            {(role === "vendor" || role === "freelancer") && (
-              <>
-                <p>
-                  <strong>Company:</strong> {formData.company}
-                </p>
-                <p>
-                  <strong>Category:</strong> {formData.category}
-                </p>
-                <p>
-                  <strong>Service:</strong> {formData.service}
-                </p>
-              </>
-            )}
-            <div className="flex justify-between mt-6">
-              <button
-                type="button"
-                onClick={prevStep}
-                className="text-purple-700 underline"
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={nextStep}
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg shadow-md"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-center text-purple-700">
-              Choose Your Plan
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {plans.map((plan) => (
-                <div
-                  key={plan.name}
-                  className={`rounded-xl p-6 shadow-lg text-center transition-all duration-300 border-2 cursor-pointer ${
-                    formData.subscription === plan.value
-                      ? "border-purple-600 bg-purple-100"
-                      : "border-gray-300 bg-white hover:shadow-xl"
-                  }`}
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      subscription: plan.value,
-                    }))
-                  }
-                >
-                  {plan.icon}
-                  <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                  <p className="text-lg text-gray-600 mb-4">{plan.price}</p>
-                  <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                    {plan.features.map((feature, i) => (
-                      <li key={i}>• {feature}</li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 mt-2 rounded-lg text-white font-semibold ${
-                      formData.subscription === plan.value
-                        ? "bg-purple-700"
-                        : "bg-purple-500 hover:bg-purple-600"
-                    }`}
-                  >
-                    Choose
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                className="text-purple-700 underline"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                className="bg-green-500 text-white px-6 py-2 rounded-lg shadow-md"
-              >
-                Submit
-              </button>
-            </div>
-          </div>
-        )}
-      </form>
+      <style jsx>{`
+        .input-style {
+          padding: 0.75rem;
+          border-radius: 0.5rem;
+          border: 1px solid #d1d5db;
+          width: 100%;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default RegisterPage;
+export default Register;

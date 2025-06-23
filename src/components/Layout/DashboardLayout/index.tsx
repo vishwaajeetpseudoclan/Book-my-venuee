@@ -1,5 +1,7 @@
+// DashboardLayout
+
 import { Outlet } from "react-router-dom";
-import AsideNavbar from "../../Dashboard Components/AsideNavbar";
+import AsideNavbar from "../../../pages/DashboardPage/AsideDashboardNavbar";
 
 const DashboardLayout = () => {
     

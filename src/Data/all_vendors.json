@@ -1,0 +1,35 @@
+
+[
+  {
+    "id": "vendor1",
+    "name": "ShutterClicks Photography",
+    "category": "Photographer",
+    "image": "/Images/HR.jpg",
+    "rating": 4.8,
+    "location": "Delhi"
+  },
+  {
+    "id": "vendor2",
+    "name": "Tandoori Treats",
+    "category": "Caterer",
+    "image": "/Images/HR.jpg",
+    "rating": 4.5,
+    "location": "Mumbai"
+  },
+  {
+    "id": "vendor3",
+    "name": "EventSpark Decor",
+    "category": "Decorator",
+    "image": "/Images/HR.jpg",
+    "rating": 4.6,
+    "location": "Bangalore"
+  },
+  {
+    "id": "vendor4",
+    "name": "DJ Blast",
+    "category": "DJ",
+    "image": "/Images/HR.jpg",
+    "rating": 4.7,
+    "location": "Hyderabad"
+  }
+]
