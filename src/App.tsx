@@ -14,6 +14,10 @@ import AboutUs from "./pages/AboutUs/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import RegisterPage from "./pages/RegisterPage";
 import AllVenuesPage from "./pages/VenuesPage";
+import ServicePage from "./pages/ServicePage.tsx";
+import EventPlanner from "./pages/EventPlanner.tsx";
+import MusicAndDjService from "./pages/MusicAndDjService.tsx";
+import LightingService from "./pages/LightingService.tsx";
 import VendorPage from "./pages/VendorPage";
 import VenueCategoryPage from "./pages/VenueCategoryPage";
 import VendorCategoryPage from "./pages/VendorCategoryPage";
@@ -35,6 +39,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/venues" element={<AllVenuesPage />} />
+          <Route path="/services/all" element={<ServicePage />} />
+          <Route path="/services/eventplanner" element={<EventPlanner />} />
+          <Route path="/services/music-dj" element={<MusicAndDjService />} />
+          <Route path="/services/lighting" element={<LightingService />} />
           <Route path="/venues/:venueId" element={<VenueDetailsPage/>} />
           <Route path="/venues/category/:categoryName" element={<VenueCategoryPage />} />
           <Route path="/vendors" element={<VendorPage />} />

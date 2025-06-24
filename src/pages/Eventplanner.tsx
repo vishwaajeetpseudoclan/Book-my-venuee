@@ -1,101 +1,100 @@
 import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import {
+  FaRegCalendarCheck,
+  FaMapMarkerAlt,
+  FaUsers,
+  FaGift,
+} from "react-icons/fa";
 
-const eventPlannerSchema = z.object({
-  fullName: z.string().min(1, "Full Name is required"),
-  email: z.string().email("Invalid email"),
-  contact: z.string().regex(/^[6-9]\d{9}$/, "Invalid contact number"),
-  password: z.string().min(6, "Minimum 6 characters"),
-  company: z.string(),
-  services: z.string(),
-  experience: z.string(),
-});
-
-type EventPlannerFormData = z.infer<typeof eventPlannerSchema>;
-
-const EventPlannerRegister: React.FC = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<EventPlannerFormData>({
-    resolver: zodResolver(eventPlannerSchema),
-  });
-
-  const onSubmit = (data: EventPlannerFormData) => {
-    console.log("Event Planner Registered:", data);
-    // You can call a mutation here
-  };
-
+const EventPlanner: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7eefd] px-4 py-10">
-      <div className="bg-white max-w-xl w-full rounded-3xl shadow-xl p-8 space-y-6">
-        <h2 className="text-2xl font-bold text-center">Event Planner</h2>
-        <p className="text-center text-gray-600">Sign up to organize amazing events</p>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100 py-16 px-6">
+      <div className="max-w-6xl mx-auto text-center">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-4 animate-title">
+          Professional Event Planning
+        </h1>
+        <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
+          We specialize in planning, organizing, and managing events that leave unforgettable memories. Whether it’s a wedding, birthday, or corporate gathering — we handle it all with care and creativity.
+        </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <input
-            {...register("fullName")}
-            placeholder="Full Name"
-            className="input-style"
-          />
-          <input
-            {...register("email")}
-            placeholder="Email"
-            className="input-style"
-          />
-          <input
-            {...register("contact")}
-            placeholder="Phone Number"
-            className="input-style"
-          />
-          <input
-            type="password"
-            {...register("password")}
-            placeholder="Password"
-            className="input-style"
-          />
-          <input
-            {...register("company")}
-            placeholder="Company Name"
-            className="input-style"
-          />
-          <select {...register("services")} className="input-style">
-            <option value="">Select Services</option>
-            <option value="wedding">Wedding Planning</option>
-            <option value="corporate">Corporate Events</option>
-            <option value="birthday">Birthday / Private</option>
-          </select>
-          <select {...register("experience")} className="input-style">
-            <option value="">Experience Level</option>
-            <option value="beginner">0–2 years</option>
-            <option value="intermediate">2–5 years</option>
-            <option value="expert">5+ years</option>
-          </select>
-
-          <div className="col-span-1 sm:col-span-2 mt-4">
-            <button
-              type="submit"
-              className="w-full bg-[#5a3eff] text-white py-3 rounded-xl hover:bg-[#4c35e6]"
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Feature Cards */}
+          {[
+            {
+              icon: <FaRegCalendarCheck className="text-pink-600 text-4xl" />,
+              title: "Event Scheduling",
+              desc: "We help you schedule, organize, and manage your event timeline seamlessly.",
+            },
+            {
+              icon: <FaMapMarkerAlt className="text-purple-600 text-4xl" />,
+              title: "Venue Selection",
+              desc: "Choose from a variety of venues to suit your event's theme and size.",
+            },
+            {
+              icon: <FaUsers className="text-yellow-500 text-4xl" />,
+              title: "Guest Management",
+              desc: "From invitations to seating arrangements, we take care of your guests.",
+            },
+            {
+              icon: <FaGift className="text-green-500 text-4xl" />,
+              title: "Customized Themes",
+              desc: "Get personalized decoration and themes that reflect your style and story.",
+            },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition duration-300 card-hover"
             >
-              Sign Up
-            </button>
-          </div>
-        </form>
+              <div className="flex justify-center mb-4">{item.icon}</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {item.title}
+              </h3>
+              <p className="text-sm text-gray-600">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-700 mb-4">
+            Let Us Plan Your Next Event
+          </h2>
+          <p className="text-md text-gray-600 mb-6 max-w-xl mx-auto">
+            Reach out today to get a free consultation and quote. We promise to make your special day truly extraordinary.
+          </p>
+          <button className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-3 rounded-full shadow-md transition-all scale-button">
+            Contact Our Planner
+          </button>
+        </div>
       </div>
 
-      <style jsx>{`
-        .input-style {
-          padding: 0.75rem;
-          border-radius: 0.5rem;
-          border: 1px solid #d1d5db;
-          width: 100%;
+      {/* ✅ Internal CSS */}
+      <style>{`
+        .animate-title {
+          animation: slideFadeIn 1.2s ease-in-out forwards;
+        }
+
+        .card-hover:hover {
+          transform: translateY(-5px);
+          transition: transform 0.3s ease;
+        }
+
+        .scale-button:hover {
+          transform: scale(1.05);
+        }
+
+        @keyframes slideFadeIn {
+          0% {
+            transform: translateY(-20px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0px);
+            opacity: 1;
+          }
         }
       `}</style>
     </div>
   );
 };
 
-export default EventPlannerRegister;
+export default EventPlanner;
